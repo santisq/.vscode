@@ -1,12 +1,15 @@
 {
     "editor.renderWhitespace": "all",
-    "telemetry.enableTelemetry": false,
-    "telemetry.enableCrashReporter": false,
     "editor.cursorBlinking": "phase",
     "editor.suggestSelection": "first",
+    "editor.snippetSuggestions": "none",
+    "editor.wordBasedSuggestions": false,
+    "editor.detectIndentation": false,
+    "editor.fontSize": 20,
     "files.trimTrailingWhitespace": true,
     "workbench.colorTheme": "Default Dark+",
-    "editor.fontSize": 20,
+    "telemetry.enableTelemetry": false,
+    "telemetry.enableCrashReporter": false,
     "terminal.integrated.fontSize": 20,
     "terminal.integrated.windowsEnableConpty": true,
     "terminal.integrated.cursorStyle": "block",
@@ -27,6 +30,5 @@
     "powershell.codeFormatting.whitespaceAfterSeparator": true,
     "powershell.codeFormatting.whitespaceBetweenParameters": true,
     "powershell.integratedConsole.showOnStartup": true,
-    "powershell.integratedConsole.focusConsoleOnExecute": false,
-    "editor.snippetSuggestions": "none"
+    "powershell.integratedConsole.focusConsoleOnExecute": false
 }
