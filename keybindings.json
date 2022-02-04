@@ -1,0 +1,23 @@
+// Place your key bindings in this file to override the defaultsauto[]
+[
+    {
+        "key": "alt+enter",
+        "command": "PowerShell.RunSelection",
+        "when": "editorTextFocus && editorLangId == 'powershell'"
+    },
+    {
+        "key": "f8",
+        "command": "-PowerShell.RunSelection",
+        "when": "editorTextFocus && editorLangId == 'powershell'"
+    },
+    {
+        "key": "ctrl+shift+enter",
+        "command": "workbench.action.debug.start",
+        "when": "debuggersAvailable && debugState == 'inactive'"
+    },
+    {
+        "key": "f5",
+        "command": "-workbench.action.debug.start",
+        "when": "debuggersAvailable && debugState == 'inactive'"
+    }
+]
