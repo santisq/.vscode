@@ -30,5 +30,9 @@
     "powershell.codeFormatting.whitespaceAfterSeparator": true,
     "powershell.codeFormatting.whitespaceBetweenParameters": true,
     "powershell.integratedConsole.showOnStartup": true,
-    "powershell.integratedConsole.focusConsoleOnExecute": false
+    "powershell.integratedConsole.focusConsoleOnExecute": false,
+    "terminal.integrated.enableMultiLinePasteWarning": false,
+    "terminal.integrated.enablePersistentSessions": false,
+    "redhat.telemetry.enabled": true,
+    "editor.bracketPairColorization.enabled": false
 }
