@@ -23,7 +23,6 @@
     "powershell.codeFormatting.whitespaceAroundOperator": false,
     "powershell.codeFormatting.newLineAfterCloseBrace": false,
     "powershell.developer.featureFlags": ["PSReadLine"],
-    "powershell.enableProfileLoading": true,
     "powershell.codeFormatting.openBraceOnSameLine": false,
     "powershell.codeFormatting.useCorrectCasing": true,
     "powershell.codeFormatting.autoCorrectAliases": true,
@@ -34,5 +33,27 @@
     "terminal.integrated.enableMultiLinePasteWarning": false,
     "terminal.integrated.enablePersistentSessions": false,
     "redhat.telemetry.enabled": true,
-    "editor.bracketPairColorization.enabled": false
+    "editor.bracketPairColorization.enabled": false,
+    "powershell.enableProfileLoading": true,
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+    "xml.fileAssociations": [
+        {
+          "systemId": "https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Format.xsd",
+          "pattern": "**/*.Format.ps1xml"
+        },
+        {
+          "systemId": "https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Types.xsd",
+          "pattern": "**/*.Types.ps1xml"
+        }
+    ],
+    "[powershell]": {
+        "files.encoding": "utf8bom"
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "powershell.powerShellDefaultVersion": "PowerShell Preview (x64)",
+    "xml.server.binary.trustedHashes": [
+        "34f51b1d8c3b85bf8af72502c3a52ca841d11cf76f848be198631e0dd2b7e169"
+    ]
 }
