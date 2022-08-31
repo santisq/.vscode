@@ -4,7 +4,6 @@
     "editor.suggestSelection": "first",
     "editor.snippetSuggestions": "none",
     "editor.wordBasedSuggestions": false,
-    "editor.detectIndentation": false,
     "editor.fontSize": 20,
     "files.trimTrailingWhitespace": true,
     "workbench.colorTheme": "Default Dark+",
@@ -49,7 +48,25 @@
         }
     ],
     "[powershell]": {
-        "files.encoding": "utf8bom"
+        "files.encoding": "utf8bom",
+        "editor.tabSize": 4,
+        "editor.detectIndentation": false
+    },
+    "[html]": {
+      "editor.suggest.insertMode": "replace",
+      "gitlens.codeLens.scopes": [
+        "document"
+      ],
+      "editor.tabSize": 2,
+      "editor.detectIndentation": false
+    },
+    "[css]": {
+      "editor.suggest.insertMode": "replace",
+      "gitlens.codeLens.scopes": [
+        "document"
+      ],
+      "editor.tabSize": 2,
+      "editor.detectIndentation": false
     },
     "terminal.integrated.defaultProfile.windows": "PowerShell",
     "powershell.powerShellDefaultVersion": "PowerShell Preview (x64)",
