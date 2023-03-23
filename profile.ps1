@@ -1,5 +1,25 @@
 ﻿using namespace System.Management.Automation
 
+$requiredModules = @{
+    'EditorServicesCommandSuite' = @{
+        AllowPrerelease = $true
+        RequiredVersion = '1.0.0-beta4'
+    }
+    'ClassExplorer' = @{}
+}
+
+$modules = Get-Module -ListAvailable |
+    Group-Object Name -AsHashTable -AsString
+
+$requiredModules.GetEnumerator() | ForEach-Object {
+    if(-not $modules.ContainsKey($_.Key)) {
+        $arg = $_.Value
+        Install-Module $_.Key @arg -Scope CurrentUser
+    }
+}
+
+$requiredModules.Keys | Import-Module
+
 function Use-Culture {
     param(
         [Parameter(Mandatory)]
@@ -104,6 +124,7 @@ function Measure-Performance {
 
 function New-DataSet {
     [CmdletBinding(DefaultParameterSetName = 'AsObjects')]
+    [Alias('dataset')]
     param(
         [Parameter(ParameterSetName = 'AsObjects')]
         [int] $NumberOfObjects = 10000,
@@ -148,7 +169,7 @@ function New-DataSet {
 
             [void] WriteObject([int] $PropCount, [int] $ValueLength) {
                 $object = [ordered]@{}
-                foreach($prop in 0..$PropCount) {
+                foreach($prop in 1..$PropCount) {
                     $object["Prop$prop"] = $this.WriteValue($ValueLength)
                 }
                 $this.Cmdlet.WriteObject([pscustomobject] $object)
