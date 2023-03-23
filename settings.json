@@ -1,76 +1,123 @@
 {
-    "editor.renderWhitespace": "all",
-    "editor.cursorBlinking": "phase",
-    "editor.suggestSelection": "first",
-    "editor.snippetSuggestions": "none",
-    "editor.wordBasedSuggestions": false,
-    "editor.fontSize": 20,
-    "files.trimTrailingWhitespace": true,
-    "workbench.colorTheme": "Default Dark+",
-    "telemetry.enableTelemetry": false,
-    "telemetry.enableCrashReporter": false,
-    "terminal.integrated.fontSize": 20,
-    "terminal.integrated.windowsEnableConpty": true,
-    "terminal.integrated.cursorStyle": "block",
-    "terminal.integrated.cursorBlinking": true,
-    "git.ignoreMissingGitWarning": true,
-    "explorer.confirmDragAndDrop": false,
-    "explorer.confirmDelete": false,
-    "security.workspace.trust.untrustedFiles": "open",
-    "files.defaultLanguage": "powershell",
-    "powershell.codeFormatting.addWhitespaceAroundPipe": true,
-    "powershell.codeFormatting.whitespaceAroundOperator": false,
-    "powershell.codeFormatting.newLineAfterCloseBrace": false,
-    "powershell.developer.featureFlags": ["PSReadLine"],
-    "powershell.codeFormatting.openBraceOnSameLine": false,
-    "powershell.codeFormatting.useCorrectCasing": true,
-    "powershell.codeFormatting.autoCorrectAliases": true,
-    "powershell.codeFormatting.whitespaceAfterSeparator": true,
-    "powershell.codeFormatting.whitespaceBetweenParameters": true,
-    "powershell.integratedConsole.showOnStartup": true,
-    "powershell.integratedConsole.focusConsoleOnExecute": false,
-    "terminal.integrated.enableMultiLinePasteWarning": false,
-    "terminal.integrated.enablePersistentSessions": false,
-    "redhat.telemetry.enabled": true,
-    "editor.bracketPairColorization.enabled": false,
-    "powershell.enableProfileLoading": true,
-    "git.autofetch": true,
-    "git.confirmSync": false,
-    "git.enableSmartCommit": true,
-    "xml.fileAssociations": [
-        {
-          "systemId": "https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Format.xsd",
-          "pattern": "**/*.Format.ps1xml"
-        },
-        {
-          "systemId": "https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Types.xsd",
-          "pattern": "**/*.Types.ps1xml"
-        }
+  "editor.renderWhitespace": "all",
+  "editor.cursorBlinking": "phase",
+  "editor.suggestSelection": "first",
+  "editor.snippetSuggestions": "none",
+  "editor.wordBasedSuggestions": false,
+  "editor.fontSize": 20,
+  "files.trimTrailingWhitespace": true,
+  "telemetry.enableTelemetry": false,
+  "telemetry.enableCrashReporter": false,
+  "terminal.integrated.fontSize": 20,
+  "terminal.integrated.windowsEnableConpty": true,
+  "terminal.integrated.cursorStyle": "block",
+  "terminal.integrated.cursorBlinking": true,
+  "git.ignoreMissingGitWarning": true,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.confirmDelete": false,
+  "security.workspace.trust.untrustedFiles": "open",
+  "files.defaultLanguage": "powershell",
+  "powershell.codeFormatting.addWhitespaceAroundPipe": true,
+  "powershell.codeFormatting.whitespaceAroundOperator": false,
+  "powershell.codeFormatting.newLineAfterCloseBrace": false,
+  "powershell.developer.featureFlags": ["PSReadLine"],
+  "powershell.codeFormatting.openBraceOnSameLine": false,
+  "powershell.codeFormatting.useCorrectCasing": true,
+  "powershell.codeFormatting.autoCorrectAliases": true,
+  "powershell.codeFormatting.whitespaceAfterSeparator": true,
+  "powershell.codeFormatting.whitespaceBetweenParameters": true,
+  "powershell.codeFormatting.alignPropertyValuePairs": true,
+  "powershell.codeFormatting.useConstantStrings": true,
+  "powershell.integratedConsole.showOnStartup": true,
+  "powershell.integratedConsole.focusConsoleOnExecute": false,
+  "terminal.integrated.enableMultiLinePasteWarning": false,
+  "terminal.integrated.enablePersistentSessions": false,
+  "redhat.telemetry.enabled": true,
+  "editor.bracketPairColorization.enabled": false,
+  "powershell.enableProfileLoading": true,
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "xml.fileAssociations": [
+      {
+        "systemId": "https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Format.xsd",
+        "pattern": "**/*.Format.ps1xml"
+      },
+      {
+        "systemId": "https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Types.xsd",
+        "pattern": "**/*.Types.ps1xml"
+      }
+  ],
+  "[powershell]": {
+      "files.encoding": "utf8bom",
+      "editor.tabSize": 4,
+      "editor.detectIndentation": false
+  },
+  "[csharp]": {
+    "editor.maxTokenizationLineLength": 2500,
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false,
+    "editor.autoIndent": "full",
+  },
+  "[html]": {
+    "editor.suggest.insertMode": "replace",
+    "gitlens.codeLens.scopes": [
+      "document"
     ],
-    "[powershell]": {
-        "files.encoding": "utf8bom",
-        "editor.tabSize": 4,
-        "editor.detectIndentation": false
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false
+  },
+  "[css]": {
+    "editor.suggest.insertMode": "replace",
+    "gitlens.codeLens.scopes": [
+      "document"
+    ],
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false
+  },
+  "[json]": {
+    "editor.quickSuggestions": {
+      "strings": true
     },
-    "[html]": {
-      "editor.suggest.insertMode": "replace",
-      "gitlens.codeLens.scopes": [
-        "document"
-      ],
-      "editor.tabSize": 2,
-      "editor.detectIndentation": false
-    },
-    "[css]": {
-      "editor.suggest.insertMode": "replace",
-      "gitlens.codeLens.scopes": [
-        "document"
-      ],
-      "editor.tabSize": 2,
-      "editor.detectIndentation": false
-    },
-    "terminal.integrated.defaultProfile.windows": "PowerShell",
-    "powershell.powerShellDefaultVersion": "PowerShell Preview (x64)",
-    "xml.server.binary.trustedHashes": [
-        "34f51b1d8c3b85bf8af72502c3a52ca841d11cf76f848be198631e0dd2b7e169"
+    "editor.suggest.insertMode": "replace",
+    "editor.tabSize": 2,
+    "gitlens.codeLens.scopes": [
+      "document"
     ]
+  },
+  "[xml]": {
+    "editor.quickSuggestions": {
+      "strings": true
+    },
+    "editor.suggest.insertMode": "replace",
+    "editor.tabSize": 2,
+    "gitlens.codeLens.scopes": [
+      "document"
+    ]
+  },
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "powershell.powerShellDefaultVersion": "PowerShell Preview (x64)",
+  "xml.server.binary.trustedHashes": [
+    "34f51b1d8c3b85bf8af72502c3a52ca841d11cf76f848be198631e0dd2b7e169",
+    "e3c601b34832ce46f8da1d8f7ecd7bc8c32357c16f93115dfc22e458ed17915c"
+  ],
+  "window.zoomLevel": -1,
+  "cSpell.fixSpellingWithRenameProvider": false,
+  "cSpell.allowCompoundWords": true,
+  "cSpell.enableFiletypes": [
+    "!cs",
+    "!ps1"
+  ],
+  "cSpell.languageSettings": [
+
+  ],
+  "cSpell.ignorePaths": [
+    "package-lock.json",
+    "node_modules",
+    "vscode-extension",
+    ".git/objects",
+    ".vscode",
+    ".vscode-insiders",
+    "src"
+  ]
 }
