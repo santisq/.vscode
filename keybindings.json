@@ -48,13 +48,17 @@
     {
         "key": "ctrl+.",
         "command": "PowerShell.InvokeRegisteredEditorCommand",
-        "args": { "commandName": "Invoke-DocumentRefactor" },
+        "args": {
+            "commandName": "Invoke-DocumentRefactor"
+        },
         "when": "editorLangId == 'powershell'"
     },
     {
         "key": "ctrl+shift+s",
         "command": "PowerShell.InvokeRegisteredEditorCommand",
-        "args": { "commandName": "ConvertTo-SplatExpression" },
+        "args": {
+            "commandName": "ConvertTo-SplatExpression"
+        },
         "when": "editorLangId == 'powershell'"
     },
     {

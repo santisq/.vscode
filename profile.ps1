@@ -1,41 +1,43 @@
 ﻿using namespace System.Management.Automation
 
 $requiredModules = @{
+    'CompletionPredictor'        = @{}
+    'ClassExplorer'              = @{}
     'EditorServicesCommandSuite' = @{
         AllowPrerelease = $true
         RequiredVersion = '1.0.0-beta4'
     }
-    'ClassExplorer' = @{}
-    'Import-CommandSuite' = @{}
 }
 
 $modules = Get-Module -ListAvailable |
-    Group-Object Name -AsHashTable -AsString
+    Group-Object Name -AsHashTable -AsString -NoElement
 
 $requiredModules.GetEnumerator() | ForEach-Object {
     if(-not $modules.ContainsKey($_.Key)) {
         $arg = $_.Value
         Install-Module $_.Key @arg -Scope CurrentUser
     }
+    Import-Module $_.Key -Force
 }
 
-$requiredModules.Keys | Import-Module
+Import-CommandSuite
+Set-PSReadLineOption -PredictionSource HistoryAndPlugin
 
 function Use-Culture {
     param(
         [Parameter(Mandatory)]
         [ArgumentCompleter({
-            param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
+                param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
 
             (Get-Culture -ListAvailable).Name | & {
-                process {
-                    if($_ -notlike "*$wordToComplete*") {
-                        return
+                    process {
+                        if($_ -notlike "*$wordToComplete*") {
+                            return
+                        }
+                        [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)
                     }
-                    [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)
                 }
-            }
-        })]
+            })]
         [cultureinfo] $Culture,
 
         [Parameter(Mandatory)]
@@ -51,8 +53,7 @@ function Use-Culture {
             [Threading.Thread]::CurrentThread.CurrentUICulture = $Culture
 
             & $ScriptBlock
-        }
-        finally {
+        } finally {
             [Threading.Thread]::CurrentThread.CurrentCulture = $PrevCulture
             [Threading.Thread]::CurrentThread.CurrentUICulture = $PrevCultureUI
         }

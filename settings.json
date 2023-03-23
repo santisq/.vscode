@@ -20,8 +20,10 @@
   "powershell.codeFormatting.addWhitespaceAroundPipe": true,
   "powershell.codeFormatting.whitespaceAroundOperator": false,
   "powershell.codeFormatting.newLineAfterCloseBrace": false,
-  "powershell.developer.featureFlags": ["PSReadLine"],
-  "powershell.codeFormatting.openBraceOnSameLine": false,
+  "powershell.developer.featureFlags": [
+    "PSReadLine"
+  ],
+  "powershell.codeFormatting.openBraceOnSameLine": true,
   "powershell.codeFormatting.useCorrectCasing": true,
   "powershell.codeFormatting.autoCorrectAliases": true,
   "powershell.codeFormatting.whitespaceAfterSeparator": true,
@@ -29,7 +31,12 @@
   "powershell.codeFormatting.alignPropertyValuePairs": true,
   "powershell.codeFormatting.useConstantStrings": true,
   "powershell.integratedConsole.showOnStartup": true,
+  "powershell.codeFormatting.whitespaceBeforeOpenParen": false,
   "powershell.integratedConsole.focusConsoleOnExecute": false,
+  "powershell.codeFormatting.pipelineIndentationStyle": "IncreaseIndentationForFirstPipeline",
+  "powershell.codeFormatting.avoidSemicolonsAsLineTerminators": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
   "terminal.integrated.enableMultiLinePasteWarning": false,
   "terminal.integrated.enablePersistentSessions": false,
   "redhat.telemetry.enabled": true,
@@ -39,24 +46,25 @@
   "git.confirmSync": false,
   "git.enableSmartCommit": true,
   "xml.fileAssociations": [
-      {
-        "systemId": "https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Format.xsd",
-        "pattern": "**/*.Format.ps1xml"
-      },
-      {
-        "systemId": "https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Types.xsd",
-        "pattern": "**/*.Types.ps1xml"
-      }
+    {
+      "systemId": "https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Format.xsd",
+      "pattern": "**/*.Format.ps1xml"
+    },
+    {
+      "systemId": "https://raw.githubusercontent.com/PowerShell/PowerShell/master/src/Schemas/Types.xsd",
+      "pattern": "**/*.Types.ps1xml"
+    }
   ],
   "[powershell]": {
-      "files.encoding": "utf8bom",
-      "editor.tabSize": 4,
-      "editor.detectIndentation": false
+    "files.encoding": "utf8bom",
+    "editor.tabSize": 4,
+    "editor.detectIndentation": true,
+    "editor.autoIndent": "full"
   },
   "[csharp]": {
     "editor.maxTokenizationLineLength": 2500,
     "editor.tabSize": 4,
-    "editor.detectIndentation": false,
+    "editor.detectIndentation": true,
     "editor.autoIndent": "full",
   },
   "[html]": {
@@ -101,16 +109,13 @@
     "34f51b1d8c3b85bf8af72502c3a52ca841d11cf76f848be198631e0dd2b7e169",
     "e3c601b34832ce46f8da1d8f7ecd7bc8c32357c16f93115dfc22e458ed17915c"
   ],
-  "window.zoomLevel": -1,
   "cSpell.fixSpellingWithRenameProvider": false,
   "cSpell.allowCompoundWords": true,
   "cSpell.enableFiletypes": [
     "!cs",
     "!ps1"
   ],
-  "cSpell.languageSettings": [
-
-  ],
+  "cSpell.languageSettings": [],
   "cSpell.ignorePaths": [
     "package-lock.json",
     "node_modules",
