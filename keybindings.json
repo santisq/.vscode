@@ -39,5 +39,10 @@
         "key": "ctrl+shift+alt+up",
         "command": "-cursorColumnSelectUp",
         "when": "textInputFocus"
+    },
+    {
+        "key": "ctrl+shift+c",
+        "command": "PowerShell.ShowAdditionalCommands",
+        "when": "editorLangId == 'powershell'"
     }
 ]
