@@ -6,6 +6,7 @@ $requiredModules = @{
         RequiredVersion = '1.0.0-beta4'
     }
     'ClassExplorer' = @{}
+    'Import-CommandSuite' = @{}
 }
 
 $modules = Get-Module -ListAvailable |

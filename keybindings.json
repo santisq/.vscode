@@ -44,5 +44,21 @@
         "key": "ctrl+shift+c",
         "command": "PowerShell.ShowAdditionalCommands",
         "when": "editorLangId == 'powershell'"
+    },
+    {
+        "key": "ctrl+.",
+        "command": "PowerShell.InvokeRegisteredEditorCommand",
+        "args": { "commandName": "Invoke-DocumentRefactor" },
+        "when": "editorLangId == 'powershell'"
+    },
+    {
+        "key": "ctrl+shift+s",
+        "command": "PowerShell.InvokeRegisteredEditorCommand",
+        "args": { "commandName": "ConvertTo-SplatExpression" },
+        "when": "editorLangId == 'powershell'"
+    },
+    {
+        "key": "ctrl+alt+f",
+        "command": "editor.action.formatDocument"
     }
 ]
