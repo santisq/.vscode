@@ -65,7 +65,7 @@
     "editor.maxTokenizationLineLength": 2500,
     "editor.tabSize": 4,
     "editor.detectIndentation": true,
-    "editor.autoIndent": "full",
+    "editor.autoIndent": "full"
   },
   "[html]": {
     "editor.suggest.insertMode": "replace",

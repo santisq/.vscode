@@ -23,6 +23,37 @@ $requiredModules.GetEnumerator() | ForEach-Object {
 Import-CommandSuite
 Set-PSReadLineOption -PredictionSource HistoryAndPlugin
 
+function QuoteArray {
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [string[]] $InputObject,
+
+        [Parameter()]
+        [switch] $UseArraySubexpression
+    )
+
+    begin {
+        $list = [System.Collections.Generic.List[string]]::new()
+    }
+    process {
+        foreach($item in $InputObject) {
+            $list.Add("'{0}'" -f $item)
+        }
+    }
+    end {
+        if($UseArraySubexpression.IsPresent) {
+            $output = '@('; $indent = ' ' * 4
+            foreach($item in 'foo', 'bar', 'baz') {
+                $output += "{0}{1}'{2}'" -f [System.Environment]::NewLine, $indent, $item
+            }
+            $output += '{0})' -f [System.Environment]::NewLine
+            return $output
+        }
+
+        $list -join ', '
+    }
+}
+
 function Use-Culture {
     param(
         [Parameter(Mandatory)]
@@ -53,7 +84,8 @@ function Use-Culture {
             [Threading.Thread]::CurrentThread.CurrentUICulture = $Culture
 
             & $ScriptBlock
-        } finally {
+        }
+        finally {
             [Threading.Thread]::CurrentThread.CurrentCulture = $PrevCulture
             [Threading.Thread]::CurrentThread.CurrentUICulture = $PrevCultureUI
         }
