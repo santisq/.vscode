@@ -1,7 +1,4 @@
-﻿using namespace System.Management.Automation
-
 $requiredModules = @{
-    'CompletionPredictor'        = @{}
     'ClassExplorer'              = @{}
     'EditorServicesCommandSuite' = @{
         AllowPrerelease = $true
@@ -9,11 +6,8 @@ $requiredModules = @{
     }
 }
 
-$modules = Get-Module -ListAvailable |
-    Group-Object Name -AsHashTable -AsString -NoElement
-
 $requiredModules.GetEnumerator() | ForEach-Object {
-    if(-not $modules.ContainsKey($_.Key)) {
+    if (-not (Get-Module $_.Key -ListAvailable)) {
         $arg = $_.Value
         Install-Module $_.Key @arg -Scope CurrentUser
     }
@@ -23,52 +17,39 @@ $requiredModules.GetEnumerator() | ForEach-Object {
 Import-CommandSuite
 Set-PSReadLineOption -PredictionSource HistoryAndPlugin
 
-function QuoteArray {
-    param(
-        [Parameter(Mandatory, ValueFromPipeline)]
-        [string[]] $InputObject,
+class CultureCompleter : System.Management.Automation.IArgumentCompleter {
+    static $Completions = [System.Collections.Generic.List[System.Management.Automation.CompletionResult]]::new()
 
-        [Parameter()]
-        [switch] $UseArraySubexpression
-    )
+    [System.Collections.Generic.IEnumerable[System.Management.Automation.CompletionResult]] CompleteArgument(
+        [string] $commandName,
+        [string] $parameterName,
+        [string] $wordToComplete,
+        [System.Management.Automation.Language.CommandAst] $commandAst,
+        [System.Collections.IDictionary] $fakeBoundParameters) {
 
-    begin {
-        $list = [System.Collections.Generic.List[string]]::new()
-    }
-    process {
-        foreach($item in $InputObject) {
-            $list.Add("'{0}'" -f $item)
-        }
-    }
-    end {
-        if($UseArraySubexpression.IsPresent) {
-            $output = '@('; $indent = ' ' * 4
-            foreach($item in 'foo', 'bar', 'baz') {
-                $output += "{0}{1}'{2}'" -f [System.Environment]::NewLine, $indent, $item
+        [CultureCompleter]::Completions.Clear()
+        $word = [regex]::Escape($WordToComplete)
+
+        foreach ($culture in [cultureinfo]::GetCultures([System.Globalization.CultureTypes]::SpecificCultures)) {
+            if ($culture.Name -notmatch $word -and $culture.DisplayName -notmatch $word) {
+                continue
             }
-            $output += '{0})' -f [System.Environment]::NewLine
-            return $output
+
+            [CultureCompleter]::Completions.Add([System.Management.Automation.CompletionResult]::new(
+                $culture.Name,
+                [string]::Format('{0}, {1}', $culture.Name, $culture.DisplayName),
+                [System.Management.Automation.CompletionResultType]::ParameterValue,
+                $culture.DisplayName))
         }
 
-        $list -join ', '
+        return [CultureCompleter]::Completions
     }
 }
 
 function Use-Culture {
     param(
         [Parameter(Mandatory)]
-        [ArgumentCompleter({
-                param($CommandName, $ParameterName, $WordToComplete, $CommandAst, $FakeBoundParameters)
-
-            (Get-Culture -ListAvailable).Name | & {
-                    process {
-                        if($_ -notlike "*$wordToComplete*") {
-                            return
-                        }
-                        [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)
-                    }
-                }
-            })]
+        [ArgumentCompleter([CultureCompleter])]
         [cultureinfo] $Culture,
 
         [Parameter(Mandatory)]
@@ -76,14 +57,14 @@ function Use-Culture {
     )
 
     end {
-        $PrevCulture   = [Threading.Thread]::CurrentThread.CurrentCulture
+        $PrevCulture = [Threading.Thread]::CurrentThread.CurrentCulture
         $PrevCultureUI = [Threading.Thread]::CurrentThread.CurrentUICulture
 
         try {
             [Threading.Thread]::CurrentThread.CurrentCulture =
             [Threading.Thread]::CurrentThread.CurrentUICulture = $Culture
 
-            & $ScriptBlock
+            $ScriptBlock.Invoke()
         }
         finally {
             [Threading.Thread]::CurrentThread.CurrentCulture = $PrevCulture
@@ -92,7 +73,8 @@ function Use-Culture {
     }
 }
 
-function prompt { "PS ..\$([IO.Path]::GetFileName($executionContext.SessionState.Path.CurrentLocation.ProviderPath))$('>' * ($nestedPromptLevel + 1)) " }
+function prompt {
+    "PS ..\$([IO.Path]::GetFileName($executionContext.SessionState.Path.CurrentLocation.ProviderPath))$('>' * ($nestedPromptLevel + 1)) " }
 
 function Measure-Performance {
     [CmdletBinding()]
@@ -110,15 +92,17 @@ function Measure-Performance {
 
     end {
         $allTests = 1..$TestCount | ForEach-Object {
-            foreach($test in $Tests.GetEnumerator()) {
-                $measurement = (Measure-Command { & $test.Value }).TotalMilliseconds
-                $totalRound  = [math]::Round($measurement, 2)
+            foreach ($test in $Tests.GetEnumerator()) {
+                $totalms = (Measure-Command { & $test.Value }).TotalMilliseconds
 
                 [pscustomobject]@{
                     TestRun           = $_
                     Test              = $test.Key
-                    TotalMilliseconds = $totalRound
+                    TotalMilliseconds = [math]::Round($totalms, 2)
                 }
+
+                [GC]::Collect()
+                [GC]::WaitForPendingFinalizers()
             }
         } | Sort-Object TotalMilliseconds
 
@@ -126,33 +110,37 @@ function Measure-Performance {
             $avg = [Linq.Enumerable]::Average([double[]] $_.Group.TotalMilliseconds)
 
             [pscustomobject]@{
-                Test          = $_.Name
-                Average       = $avg
-                RelativeSpeed = 0
+                Test    = $_.Name
+                Average = $avg
             }
         } | Sort-Object Average
 
-        $average[0].RelativeSpeed = '1x'
-        $top = $average[0].Average
-
-        $average | ForEach-Object {
-            $_.RelativeSpeed = ($_.Average / $top).ToString('N2') + 'x'
-            $_.Average = '{0:0.00} ms' -f $_.Average
-        }
-
-        if($OutputAllTests.IsPresent) {
-            $allTests | Format-Table -AutoSize
-        }
-
-        $average | Format-Table -Property @(
+        $average | Select-Object @(
+            'Test'
+            @{
+                Name       = 'Average'
+                Expression = { '{0:0.00} ms' -f $_.Average }
+            }
+            @{
+                Name       = 'RelativeSpeed'
+                Expression = {
+                    $relativespeed = $_.Average / $average[0].Average
+                    [math]::Round($relativespeed, 2).ToString() + 'x'
+                }
+            }
+        ) | Format-Table -Property @(
             'Test'
             @{
                 Name       = 'Average'
                 Expression = { $_.Average }
-                Alignment  ='Right'
+                Alignment  = 'Right'
             }
             'RelativeSpeed'
         )
+
+        if ($OutputAllTests.IsPresent) {
+            $allTests | Format-Table -AutoSize
+        }
     }
 }
 
@@ -184,17 +172,17 @@ function New-DataSet {
         class RandomJunkGenerator {
             [string] $CharMap
             [random] $Randomizer = [random]::new()
-            [PSCmdlet] $Cmdlet
+            [System.Management.Automation.PSCmdlet] $Cmdlet
 
-            RandomJunkGenerator([string] $Charmap, [PSCmdlet] $Cmdlet) {
+            RandomJunkGenerator([string] $Charmap, [System.Management.Automation.PSCmdlet] $Cmdlet) {
                 $this.CharMap = $Charmap
-                $this.Cmdlet  = $Cmdlet
+                $this.Cmdlet = $Cmdlet
             }
 
             [string] WriteValue([int] $Length) {
                 $content = [char[]]::new($Length)
 
-                for($i = 0; $i -lt $Length; $i++) {
+                for ($i = 0; $i -lt $Length; $i++) {
                     $content[$i] = $this.CharMap[$this.Randomizer.Next($this.CharMap.Length)]
                 }
 
@@ -203,7 +191,7 @@ function New-DataSet {
 
             [void] WriteObject([int] $PropCount, [int] $ValueLength) {
                 $object = [ordered]@{}
-                foreach($prop in 1..$PropCount) {
+                foreach ($prop in 1..$PropCount) {
                     $object["Prop$prop"] = $this.WriteValue($ValueLength)
                 }
                 $this.Cmdlet.WriteObject([pscustomobject] $object)
@@ -212,14 +200,14 @@ function New-DataSet {
 
         $junkGenerator = [RandomJunkGenerator]::new($charmap, $PSCmdlet)
 
-        if($PSCmdlet.ParameterSetName -eq 'AsValues') {
-            while($NumberOfObjects--) {
+        if ($PSCmdlet.ParameterSetName -eq 'AsValues') {
+            while ($NumberOfObjects--) {
                 $junkGenerator.WriteValue($ValueLength)
             }
             return
         }
 
-        while($NumberOfObjects--) {
+        while ($NumberOfObjects--) {
             $junkGenerator.WriteObject($NumberOfProperties, $ValueLength)
         }
     }
