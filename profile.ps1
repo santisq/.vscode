@@ -74,7 +74,8 @@ function Use-Culture {
 }
 
 function prompt {
-    "PS ..\$([IO.Path]::GetFileName($executionContext.SessionState.Path.CurrentLocation.ProviderPath))$('>' * ($nestedPromptLevel + 1)) " }
+    "PS ..\$([IO.Path]::GetFileName($executionContext.SessionState.Path.CurrentLocation.ProviderPath))$('>' * ($nestedPromptLevel + 1)) "
+}
 
 function Measure-Performance {
     [CmdletBinding()]
