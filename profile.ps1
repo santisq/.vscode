@@ -449,8 +449,8 @@ function ConvertTo-ArrayExpression {
     end {
         if ($UseArraySubexpression.IsPresent) {
             $output = '@('; $indent = ' ' * 4
-            foreach ($item in 'foo', 'bar', 'baz') {
-                $output += "{0}{1}'{2}'" -f [System.Environment]::NewLine, $indent, $item
+            foreach ($item in $list) {
+                $output += "{0}{1}{2}" -f [System.Environment]::NewLine, $indent, $item
             }
             $output += '{0})' -f [System.Environment]::NewLine
             return $output
