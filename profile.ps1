@@ -77,7 +77,7 @@ function prompt {
     "PS ..\$([IO.Path]::GetFileName($executionContext.SessionState.Path.CurrentLocation.ProviderPath))$('>' * ($nestedPromptLevel + 1)) "
 }
 
-function Measure-Performance {
+function Measure-Expression {
     [CmdletBinding()]
     [Alias('measureme')]
     param(
