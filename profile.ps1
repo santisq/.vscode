@@ -432,7 +432,7 @@ function Expand-MemberInfo {
 function ConvertTo-ArrayExpression {
     [Alias('ToArrayEx')]
     param(
-        [Parameter(Mandatory, ValueFromPipeline)]
+        [Parameter(ValueFromPipeline)]
         [string[]] $InputObject,
 
         [Parameter()]
@@ -444,7 +444,7 @@ function ConvertTo-ArrayExpression {
     }
     process {
         foreach ($item in $InputObject.Trim()) {
-            $list.Add("'{0}'" -f $item)
+            $list.Add("'{0}'" -f $item.Replace("'", "''"))
         }
     }
     end {
@@ -454,6 +454,6 @@ function ConvertTo-ArrayExpression {
                 $Indentation + $item
             }
             ')'
-        ) -join [System.Environment]::NewLine
+        )
     }
 }
