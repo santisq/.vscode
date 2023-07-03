@@ -430,32 +430,30 @@ function Expand-MemberInfo {
 }
 
 function ConvertTo-ArrayExpression {
+    [Alias('ToArrayEx')]
     param(
         [Parameter(Mandatory, ValueFromPipeline)]
         [string[]] $InputObject,
 
         [Parameter()]
-        [switch] $UseArraySubexpression
+        [string] $Indentation = ' ' * 4
     )
 
     begin {
         $list = [System.Collections.Generic.List[string]]::new()
     }
     process {
-        foreach ($item in $InputObject) {
+        foreach ($item in $InputObject.Trim()) {
             $list.Add("'{0}'" -f $item)
         }
     }
     end {
-        if ($UseArraySubexpression.IsPresent) {
-            $output = '@('; $indent = ' ' * 4
+        return @(
+            '@('
             foreach ($item in $list) {
-                $output += "{0}{1}{2}" -f [System.Environment]::NewLine, $indent, $item
+                $Indentation + $item
             }
-            $output += '{0})' -f [System.Environment]::NewLine
-            return $output
-        }
-
-        $list -join ', '
+            ')'
+        ) -join [System.Environment]::NewLine
     }
 }
