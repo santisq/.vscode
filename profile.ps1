@@ -433,7 +433,7 @@ function ConvertTo-ArrayExpression {
     [Alias('ToArrayEx')]
     param(
         [Parameter(ValueFromPipeline)]
-        [string[]] $InputObject,
+        [string[]] $InputObject = (Get-Clipboard),
 
         [Parameter()]
         [string] $Indentation = ' ' * 4
