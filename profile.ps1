@@ -440,20 +440,14 @@ function ConvertTo-ArrayExpression {
     )
 
     begin {
-        $list = [System.Collections.Generic.List[string]]::new()
+        '@('
     }
     process {
         foreach ($item in $InputObject.Trim()) {
-            $list.Add("'{0}'" -f $item.Replace("'", "''"))
+            $Indentation + "'{0}'" -f $item.Replace("'", "''")
         }
     }
     end {
-        return @(
-            '@('
-            foreach ($item in $list) {
-                $Indentation + $item
-            }
-            ')'
-        )
+        ')'
     }
 }
