@@ -14,8 +14,10 @@ $requiredModules.GetEnumerator() | ForEach-Object {
     Import-Module $_.Key -Force
 }
 
-Import-CommandSuite
-Set-PSReadLineOption -PredictionSource HistoryAndPlugin
+if ($psEditor) {
+    Import-CommandSuite
+    Set-PSReadLineOption -PredictionSource HistoryAndPlugin
+}
 
 class CultureCompleter : System.Management.Automation.IArgumentCompleter {
     static $Completions = [System.Collections.Generic.List[System.Management.Automation.CompletionResult]]::new()
@@ -36,10 +38,10 @@ class CultureCompleter : System.Management.Automation.IArgumentCompleter {
             }
 
             [CultureCompleter]::Completions.Add([System.Management.Automation.CompletionResult]::new(
-                $culture.Name,
-                [string]::Format('{0}, {1}', $culture.Name, $culture.DisplayName),
-                [System.Management.Automation.CompletionResultType]::ParameterValue,
-                $culture.DisplayName))
+                    $culture.Name,
+                    [string]::Format('{0}, {1}', $culture.Name, $culture.DisplayName),
+                    [System.Management.Automation.CompletionResultType]::ParameterValue,
+                    $culture.DisplayName))
         }
 
         return [CultureCompleter]::Completions
