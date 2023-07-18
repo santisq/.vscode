@@ -21,6 +21,11 @@ if ($psEditor) {
 
 class CultureCompleter : System.Management.Automation.IArgumentCompleter {
     static $Completions = [System.Collections.Generic.List[System.Management.Automation.CompletionResult]]::new()
+    static $Set
+
+    static CultureCompleter() {
+        [CultureCompleter]::Set = [cultureinfo]::GetCultures([System.Globalization.CultureTypes]::SpecificCultures)
+    }
 
     [System.Collections.Generic.IEnumerable[System.Management.Automation.CompletionResult]] CompleteArgument(
         [string] $commandName,
@@ -30,10 +35,9 @@ class CultureCompleter : System.Management.Automation.IArgumentCompleter {
         [System.Collections.IDictionary] $fakeBoundParameters) {
 
         [CultureCompleter]::Completions.Clear()
-        $word = [regex]::Escape($WordToComplete)
 
-        foreach ($culture in [cultureinfo]::GetCultures([System.Globalization.CultureTypes]::SpecificCultures)) {
-            if ($culture.Name -notmatch $word -and $culture.DisplayName -notmatch $word) {
+        foreach ($culture in [CultureCompleter]::Set) {
+            if (-not $culture.Name.StartsWith($wordToComplete, [System.StringComparison]::InvariantCultureIgnoreCase)) {
                 continue
             }
 
