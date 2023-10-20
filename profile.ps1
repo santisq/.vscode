@@ -20,11 +20,12 @@ if ($psEditor) {
 }
 
 class CultureCompleter : System.Management.Automation.IArgumentCompleter {
-    static $Completions = [System.Collections.Generic.List[System.Management.Automation.CompletionResult]]::new()
-    static $Set
+    static [System.Collections.Generic.List[System.Management.Automation.CompletionResult]] $Completions
+    static [cultureinfo[]] $Cultures
 
     static CultureCompleter() {
-        [CultureCompleter]::Set = [cultureinfo]::GetCultures([System.Globalization.CultureTypes]::SpecificCultures)
+        [CultureCompleter]::Completions = [System.Collections.Generic.List[System.Management.Automation.CompletionResult]]::new()
+        [CultureCompleter]::Cultures = [cultureinfo]::GetCultures([System.Globalization.CultureTypes]::SpecificCultures)
     }
 
     [System.Collections.Generic.IEnumerable[System.Management.Automation.CompletionResult]] CompleteArgument(
@@ -35,17 +36,18 @@ class CultureCompleter : System.Management.Automation.IArgumentCompleter {
         [System.Collections.IDictionary] $fakeBoundParameters) {
 
         [CultureCompleter]::Completions.Clear()
+        $word = [regex]::Escape($WordToComplete)
 
-        foreach ($culture in [CultureCompleter]::Set) {
-            if (-not $culture.Name.StartsWith($wordToComplete, [System.StringComparison]::InvariantCultureIgnoreCase)) {
+        foreach ($culture in [CultureCompleter]::Cultures) {
+            if ($culture.Name -notmatch $word -and $culture.DisplayName -notmatch $word) {
                 continue
             }
 
             [CultureCompleter]::Completions.Add([System.Management.Automation.CompletionResult]::new(
-                    $culture.Name,
-                    [string]::Format('{0}, {1}', $culture.Name, $culture.DisplayName),
-                    [System.Management.Automation.CompletionResultType]::ParameterValue,
-                    $culture.DisplayName))
+                $culture.Name,
+                [string]::Format('{0}, {1}', $culture.Name, $culture.DisplayName),
+                [System.Management.Automation.CompletionResultType]::ParameterValue,
+                $culture.DisplayName))
         }
 
         return [CultureCompleter]::Completions
@@ -80,7 +82,7 @@ function Use-Culture {
 }
 
 function prompt {
-    "PS ..\$([IO.Path]::GetFileName($executionContext.SessionState.Path.CurrentLocation.ProviderPath))$('>' * ($nestedPromptLevel + 1)) "
+    "PS $($PWD.Path -replace '.+(?=\\)', '..')$('>' * ($nestedPromptLevel + 1)) "
 }
 
 function Measure-Expression {
@@ -382,10 +384,10 @@ function Expand-MemberInfo {
             return
         }
 
-        $arguments = [string]$argumentList
+        $arguments = [string] $argumentList
     }
     process {
-        if ($InputObject -is [PSMethod]) {
+        if ($InputObject -is [System.Management.Automation.PSMethod]) {
             $null = $PSBoundParameters.Remove('InputObject')
             return $InputObject.ReflectionInfo | & $MyInvocation.MyCommand @PSBoundParameters
         }
@@ -397,7 +399,7 @@ function Expand-MemberInfo {
             $assembly = $InputObject.DeclaringType.Assembly
         }
 
-        $sb = [System.Text.StringBuilder]::new([string]$arguments)
+        $sb = [System.Text.StringBuilder]::new([string] $arguments)
         if ($sb.Length -gt 0) {
             $null = $sb.Append(' ')
         }
@@ -455,5 +457,46 @@ function ConvertTo-ArrayExpression {
     }
     end {
         ')'
+    }
+}
+
+function Update-DotNet {
+    [CmdletBinding()]
+    param()
+    end {
+        $globalFile = Join-Path $global:PWD.ProviderPath global.json
+        if (-not (Test-Path -LiteralPath $globalFile)) {
+            return
+        }
+
+        $version = (Get-Content -LiteralPath $globalFile -Raw -ErrorAction Stop | ConvertFrom-Json).sdk.version
+        $installPath = Join-Path C:\dotnet $version
+        if (-not (Test-Path -LiteralPath $installPath\dotnet.exe)) {
+            dotnet-install.ps1 -Version $version -InstallDir $installPath
+        }
+
+        $vscodeSettingsPath = Join-Path $global:PWD .vscode/settings.json
+        $vscodeSettings = Get-Content -LiteralPath $vscodeSettingsPath -Raw | ConvertFrom-Json
+        if ($vscodeSettings.'omnisharp.dotnetPath' -ne $installPath) {
+            if (-not $vscodeSettings.'omnisharp.dotnetPath') {
+                $vscodeSettings.psobject.Properties.Add(
+                    [psnoteproperty]::new(
+                        'omnisharp.dotnetPath',
+                        $installPath))
+            }
+            else {
+                $vscodeSettings.'omnisharp.dotnetPath' = $installPath
+            }
+
+            $vscodeSettings |
+                ConvertTo-Json |
+                Set-Content -Encoding ([System.Text.UTF8Encoding]::new()) -LiteralPath $vscodeSettingsPath
+        }
+
+        if ($env:PATH.Contains($installPath)) {
+            return
+        }
+
+        $env:PATH = $installPath + [System.IO.Path]::PathSeparator + $env:PATH
     }
 }
