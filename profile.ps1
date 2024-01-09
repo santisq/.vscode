@@ -96,13 +96,23 @@ function Measure-Expression {
         [int32] $TestCount = 5,
 
         [Parameter()]
-        [switch] $OutputAllTests
+        [switch] $OutputAllTests,
+
+        [Parameter()]
+        [object[]] $ArgumentList
     )
 
     end {
         $allTests = 1..$TestCount | ForEach-Object {
             foreach ($test in $Tests.GetEnumerator()) {
-                $totalms = (Measure-Command { & $test.Value }).TotalMilliseconds
+                $sb = if ($ArgumentList) {
+                    { & $test.Value $ArgumentList }
+                }
+                else {
+                    { & $test.Value }
+                }
+
+                $totalms = (Measure-Command $sb).TotalMilliseconds
 
                 [pscustomobject]@{
                     TestRun           = $_
