@@ -87,7 +87,7 @@ function prompt {
 
 function Measure-Expression {
     [CmdletBinding()]
-    [Alias('measureme')]
+    [Alias('measureme', 'time')]
     param(
         [Parameter(Mandatory, Position = 0)]
         [hashtable] $Tests,
