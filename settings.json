@@ -3,7 +3,7 @@
   "editor.cursorBlinking": "phase",
   "editor.suggestSelection": "first",
   "editor.snippetSuggestions": "none",
-  "editor.wordBasedSuggestions": false,
+  "editor.wordBasedSuggestions": "off",
   "editor.fontSize": 20,
   "files.trimTrailingWhitespace": true,
   "telemetry.enableTelemetry": false,
@@ -18,8 +18,8 @@
   "security.workspace.trust.untrustedFiles": "open",
   "files.defaultLanguage": "powershell",
   "powershell.codeFormatting.addWhitespaceAroundPipe": true,
-  "powershell.codeFormatting.whitespaceAroundOperator": false,
-  "powershell.codeFormatting.newLineAfterCloseBrace": false,
+  "powershell.codeFormatting.whitespaceAroundOperator": true,
+  "powershell.codeFormatting.newLineAfterCloseBrace": true,
   "powershell.developer.featureFlags": [
     "PSReadLine"
   ],
@@ -31,17 +31,24 @@
   "powershell.codeFormatting.alignPropertyValuePairs": true,
   "powershell.codeFormatting.useConstantStrings": true,
   "powershell.integratedConsole.showOnStartup": true,
-  "powershell.codeFormatting.whitespaceBeforeOpenParen": false,
+  "powershell.codeFormatting.newLineAfterOpenBrace": true,
+  "powershell.codeFormatting.preset": "Stroustrup",
+  "powershell.codeFormatting.trimWhitespaceAroundPipe": true,
+  "powershell.codeFormatting.whitespaceInsideBrace": true,
+  "powershell.codeFormatting.whitespaceBeforeOpenBrace": true,
+  "powershell.codeFolding.enable": true,
   "powershell.integratedConsole.focusConsoleOnExecute": false,
   "powershell.codeFormatting.pipelineIndentationStyle": "IncreaseIndentationForFirstPipeline",
   "powershell.codeFormatting.avoidSemicolonsAsLineTerminators": true,
-  "editor.formatOnSave": true,
+  "csharp.format.enable": true,
+  "editor.formatOnSave": false,
   "editor.formatOnPaste": true,
   "terminal.integrated.enableMultiLinePasteWarning": false,
   "terminal.integrated.enablePersistentSessions": false,
-  "redhat.telemetry.enabled": true,
+  "redhat.telemetry.enabled": false,
   "editor.bracketPairColorization.enabled": false,
   "powershell.enableProfileLoading": true,
+  "omnisharp.useEditorFormattingSettings": true,
   "git.autofetch": true,
   "git.confirmSync": false,
   "git.enableSmartCommit": true,
@@ -58,14 +65,14 @@
   "[powershell]": {
     "files.encoding": "utf8bom",
     "editor.tabSize": 4,
-    "editor.detectIndentation": true,
+    "editor.detectIndentation": false,
     "editor.autoIndent": "full"
   },
   "[csharp]": {
     "editor.maxTokenizationLineLength": 2500,
     "editor.tabSize": 4,
-    "editor.detectIndentation": true,
-    "editor.autoIndent": "full"
+    "editor.detectIndentation": false,
+    "editor.autoIndent": "full",
   },
   "[html]": {
     "editor.suggest.insertMode": "replace",
@@ -103,8 +110,13 @@
       "document"
     ]
   },
+  "[markdown]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "on",
+    "files.trimTrailingWhitespace": false
+  },
   "terminal.integrated.defaultProfile.windows": "PowerShell",
-  "powershell.powerShellDefaultVersion": "PowerShell Preview (x64)",
+  "powershell.powerShellDefaultVersion": "PowerShell (x64)",
   "xml.server.binary.trustedHashes": [
     "34f51b1d8c3b85bf8af72502c3a52ca841d11cf76f848be198631e0dd2b7e169",
     "e3c601b34832ce46f8da1d8f7ecd7bc8c32357c16f93115dfc22e458ed17915c"
@@ -124,5 +136,36 @@
     ".vscode",
     ".vscode-insiders",
     "src"
+  ],
+  "powershell.pester.codeLens": false,
+  "powershell.codeFormatting.ignoreOneLineBlock": false,
+  "omnisharp.enableRoslynAnalyzers": true,
+  "azure.resourceFilter": [
+    "e0793d39-0939-496d-b129-198edd916feb/7c9030fc-37fc-46b8-8dc8-fe41354fb55d"
+  ],
+  "powershell.promptToUpdatePowerShell": false,
+  "git.openRepositoryInParentFolders": "never",
+  "azureResourceGroups.groupBy": "resourceType",
+  "azureResourceGroups.selectedSubscriptions": [
+    "e0793d39-0939-496d-b129-198edd916feb/7c9030fc-37fc-46b8-8dc8-fe41354fb55d"
+  ],
+  "azureFunctions.showProjectWarning": false,
+  "gitlens.launchpad.indicator.enabled": false,
+  "extensions.ignoreRecommendations": true,
+  "files.associations": {
+    "*.ps1xml": "xml"
+  },
+  "window.customTitleBarVisibility": "never",
+  "workbench.startupEditor": "none",
+  "cSpell.userWords": [
+    "Conpty",
+    "Decompilation",
+    "kcsb",
+    "Msal",
+    "nologo",
+    "omnisharp",
+    "pssa",
+    "Squarzon",
+    "Stroustrup"
   ]
 }
