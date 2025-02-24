@@ -22,29 +22,6 @@ if ($psEditor) {
     Set-PSReadLineOption -PredictionSource HistoryAndPlugin
 }
 
-function publish {
-    param(
-        [Parameter()]
-        [ValidateSet('Release', 'Debug')]
-        [string] $Configuration = 'Release',
-
-        [Parameter()]
-        [string] $Framework = 'netstandard2.0'
-    )
-
-    $result = dotnet publish -c $Configuration -f $Framework -nologo -v m
-
-    if ($LASTEXITCODE) {
-        $result |
-            Select-Object -Skip 2 |
-            ForEach-Object { $_ -replace '\[.*' } |
-            ForEach-Object { $_.Replace($pwd.Path, '') } |
-            Write-Error
-    }
-
-    $result -match '\.[a-z]{3}' -replace '.+(?=[a-z]:)'
-}
-
 class CultureCompleter : System.Management.Automation.IArgumentCompleter {
     static [System.Collections.Generic.List[System.Management.Automation.CompletionResult]] $Completions
     static [cultureinfo[]] $Cultures
@@ -185,75 +162,6 @@ function Measure-Expression {
 
         if ($OutputAllTests.IsPresent) {
             $allTests
-        }
-    }
-}
-
-function New-DataSet {
-    [CmdletBinding(DefaultParameterSetName = 'AsObjects')]
-    [Alias('dataset')]
-    param(
-        [Parameter(ParameterSetName = 'AsObjects')]
-        [int] $NumberOfObjects = 10000,
-
-        [Parameter(ParameterSetName = 'AsValues')]
-        [int] $NumberOfValues = 10000,
-
-        [Parameter(ParameterSetName = 'AsObjects')]
-        [int] $NumberOfProperties = 10,
-
-        [Parameter(ParameterSetName = 'AsValues')]
-        [Parameter(ParameterSetName = 'AsObjects')]
-        [int] $ValueLength = 10
-    )
-
-    end {
-        $charmap = -join @(
-            [char]'A'..[char]'Z'
-            [char]'a'..[char]'z'
-            0..10
-        )
-
-        class RandomJunkGenerator {
-            [string] $CharMap
-            [random] $Randomizer = [random]::new()
-            [System.Management.Automation.PSCmdlet] $Cmdlet
-
-            RandomJunkGenerator([string] $Charmap, [System.Management.Automation.PSCmdlet] $Cmdlet) {
-                $this.CharMap = $Charmap
-                $this.Cmdlet = $Cmdlet
-            }
-
-            [string] WriteValue([int] $Length) {
-                $content = [char[]]::new($Length)
-
-                for ($i = 0; $i -lt $Length; $i++) {
-                    $content[$i] = $this.CharMap[$this.Randomizer.Next($this.CharMap.Length)]
-                }
-
-                return [string]::new($content)
-            }
-
-            [void] WriteObject([int] $PropCount, [int] $ValueLength) {
-                $object = [ordered]@{}
-                foreach ($prop in 1..$PropCount) {
-                    $object["Prop$prop"] = $this.WriteValue($ValueLength)
-                }
-                $this.Cmdlet.WriteObject([pscustomobject] $object)
-            }
-        }
-
-        $junkGenerator = [RandomJunkGenerator]::new($charmap, $PSCmdlet)
-
-        if ($PSCmdlet.ParameterSetName -eq 'AsValues') {
-            while ($NumberOfObjects--) {
-                $junkGenerator.WriteValue($ValueLength)
-            }
-            return
-        }
-
-        while ($NumberOfObjects--) {
-            $junkGenerator.WriteObject($NumberOfProperties, $ValueLength)
         }
     }
 }
@@ -493,47 +401,6 @@ function ConvertTo-ArrayExpression {
     }
     end {
         ')'
-    }
-}
-
-function Update-DotNet {
-    [CmdletBinding()]
-    param()
-    end {
-        $globalFile = Join-Path $global:PWD.ProviderPath global.json
-        if (-not (Test-Path -LiteralPath $globalFile)) {
-            return
-        }
-
-        $version = (Get-Content -LiteralPath $globalFile -Raw -ErrorAction Stop | ConvertFrom-Json).sdk.version
-        $installPath = Join-Path C:\dotnet $version
-        if (-not (Test-Path -LiteralPath $installPath\dotnet.exe)) {
-            dotnet-install.ps1 -Version $version -InstallDir $installPath
-        }
-
-        $vscodeSettingsPath = Join-Path $global:PWD .vscode/settings.json
-        $vscodeSettings = Get-Content -LiteralPath $vscodeSettingsPath -Raw | ConvertFrom-Json
-        if ($vscodeSettings.'omnisharp.dotnetPath' -ne $installPath) {
-            if (-not $vscodeSettings.'omnisharp.dotnetPath') {
-                $vscodeSettings.psobject.Properties.Add(
-                    [psnoteproperty]::new(
-                        'omnisharp.dotnetPath',
-                        $installPath))
-            }
-            else {
-                $vscodeSettings.'omnisharp.dotnetPath' = $installPath
-            }
-
-            $vscodeSettings |
-                ConvertTo-Json |
-                Set-Content -Encoding ([System.Text.UTF8Encoding]::new()) -LiteralPath $vscodeSettingsPath
-        }
-
-        if ($env:PATH.Contains($installPath)) {
-            return
-        }
-
-        $env:PATH = $installPath + [System.IO.Path]::PathSeparator + $env:PATH
     }
 }
 
