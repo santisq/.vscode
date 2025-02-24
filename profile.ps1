@@ -6,6 +6,9 @@ $requiredModules = @{
     }
 }
 
+$env:BAT_THEME = 'Visual Studio Dark+'
+$alias:dis = 'Get-ScriptBlockDisassembly'
+
 $requiredModules.GetEnumerator() | ForEach-Object {
     if (-not (Get-Module $_.Key -ListAvailable)) {
         $arg = $_.Value
@@ -17,6 +20,29 @@ $requiredModules.GetEnumerator() | ForEach-Object {
 if ($psEditor) {
     Import-CommandSuite
     Set-PSReadLineOption -PredictionSource HistoryAndPlugin
+}
+
+function publish {
+    param(
+        [Parameter()]
+        [ValidateSet('Release', 'Debug')]
+        [string] $Configuration = 'Release',
+
+        [Parameter()]
+        [string] $Framework = 'netstandard2.0'
+    )
+
+    $result = dotnet publish -c $Configuration -f $Framework -nologo -v m
+
+    if ($LASTEXITCODE) {
+        $result |
+            Select-Object -Skip 2 |
+            ForEach-Object { $_ -replace '\[.*' } |
+            ForEach-Object { $_.Replace($pwd.Path, '') } |
+            Write-Error
+    }
+
+    $result -match '\.[a-z]{3}' -replace '.+(?=[a-z]:)'
 }
 
 class CultureCompleter : System.Management.Automation.IArgumentCompleter {
@@ -65,6 +91,8 @@ function Use-Culture {
     )
 
     end {
+        $prev = $ErrorActionPreference
+        $ErrorActionPreference = 'Stop'
         $PrevCulture = [Threading.Thread]::CurrentThread.CurrentCulture
         $PrevCultureUI = [Threading.Thread]::CurrentThread.CurrentUICulture
 
@@ -74,9 +102,13 @@ function Use-Culture {
 
             $ScriptBlock.Invoke()
         }
+        catch {
+            $PSCmdlet.WriteError($_)
+        }
         finally {
             [Threading.Thread]::CurrentThread.CurrentCulture = $PrevCulture
             [Threading.Thread]::CurrentThread.CurrentUICulture = $PrevCultureUI
+            $ErrorActionPreference = $prev
         }
     }
 }
@@ -99,25 +131,27 @@ function Measure-Expression {
         [switch] $OutputAllTests,
 
         [Parameter()]
-        [object[]] $ArgumentList
+        [hashtable] $Parameters
     )
 
     end {
         $allTests = 1..$TestCount | ForEach-Object {
             foreach ($test in $Tests.GetEnumerator()) {
-                $sb = if ($ArgumentList) {
-                    { & $test.Value $ArgumentList }
+                $sb = if ($Parameters) {
+                    { & $test.Value @Parameters }
                 }
                 else {
                     { & $test.Value }
                 }
 
-                $totalms = (Measure-Command $sb).TotalMilliseconds
+                $now = [datetime]::Now
+                $null = $sb.Invoke()
+                $totalMs = ([datetime]::Now - $now).TotalMilliseconds
 
                 [pscustomobject]@{
                     TestRun           = $_
                     Test              = $test.Key
-                    TotalMilliseconds = [math]::Round($totalms, 2)
+                    TotalMilliseconds = [math]::Round($totalMs, 2)
                 }
 
                 [GC]::Collect()
@@ -147,18 +181,10 @@ function Measure-Expression {
                     [math]::Round($relativespeed, 2).ToString() + 'x'
                 }
             }
-        ) | Format-Table -Property @(
-            'Test'
-            @{
-                Name       = 'Average'
-                Expression = { $_.Average }
-                Alignment  = 'Right'
-            }
-            'RelativeSpeed'
         )
 
         if ($OutputAllTests.IsPresent) {
-            $allTests | Format-Table -AutoSize
+            $allTests
         }
     }
 }
@@ -423,16 +449,16 @@ function Expand-MemberInfo {
             $metadataToken = $InputObject.get_MetadataToken()
         }
         catch [System.InvalidOperationException] {
-            $exception = [PSArgumentException]::new(
+            $exception = [System.Management.Automation.PSArgumentException]::new(
                 ('Unable to get the metadata token of member "{0}". Ensure ' -f $InputObject) +
                 'the target is not dynamically generated and then try the command again.',
                 $PSItem)
 
             $PSCmdlet.WriteError(
-                [ErrorRecord]::new(
+                [System.Management.Automation.ErrorRecord]::new(
                     <# exception:     #> $exception,
                     <# errorId:       #> 'CannotGetMetadataToken',
-                    <# errorCategory: #> [ErrorCategory]::InvalidArgument,
+                    <# errorCategory: #> [System.Management.Automation.ErrorCategory]::InvalidArgument,
                     <# targetObject:  #> $InputObject))
 
             return
@@ -440,8 +466,8 @@ function Expand-MemberInfo {
 
 
         $null = $sb.
-        AppendFormat('--md {0} ', $metadataToken).
-        AppendFormat('"{0}"', $assembly.Location)
+            AppendFormat('--md {0} ', $metadataToken).
+            AppendFormat('"{0}"', $assembly.Location)
 
         & ([scriptblock]::Create(('& "{0}" {1}' -f $dnSpy.Source, $sb.ToString())))
     }
@@ -508,5 +534,92 @@ function Update-DotNet {
         }
 
         $env:PATH = $installPath + [System.IO.Path]::PathSeparator + $env:PATH
+    }
+}
+
+function Uninstall-DuplicateModule {
+    param(
+        [Parameter()]
+        [SupportsWildcards()]
+        [string] $Name = '*'
+    )
+
+    Get-Module $Name -ListAvailable |
+        Group-Object Name |
+        Where-Object Count -GT 1 |
+        ForEach-Object { $_.Group | Sort-Object Version | Select-Object -SkipLast 1 } |
+        ForEach-Object {
+            try {
+                $module = $_
+                Write-Host "Uninstalling '$($_.Name) v$($_.Version)'" -ForegroundColor Green
+                Uninstall-Module -Name $_.Name -RequiredVersion $_.Version -ErrorAction Stop
+            }
+            catch {
+                Write-Host "Failed to Uninstall '$($module.Name) v$($module.Version)'.`n$($_.Exception.Message)" -ForegroundColor Red
+            }
+        }
+}
+
+function Format-CSharp {
+    [Alias('cs')]
+    [CmdletBinding(PositionalBinding = $false)]
+    [OutputType([string])]
+    param(
+        [Parameter(ValueFromRemainingArguments = $true)]
+        [string[]] $ArgumentList,
+
+        [Parameter(ValueFromPipeline)]
+        [psobject] $InputObject
+    )
+    begin {
+        $ArgumentList += '-l', 'cs'
+        $pipe = { Out-Bat @ArgumentList }.GetSteppablePipeline($MyInvocation.CommandOrigin)
+        $pipe.Begin($PSCmdlet)
+    }
+    process {
+        $pipe.Process($PSItem)
+    }
+    end {
+        $pipe.End()
+    }
+}
+
+function Out-Bat {
+    [Alias('ob')]
+    [CmdletBinding(PositionalBinding = $false)]
+    [OutputType([string])]
+    param(
+        [Parameter(ValueFromRemainingArguments = $true)]
+        [string[]] $ArgumentList,
+
+        [Parameter(ValueFromPipeline)]
+        [psobject] $InputObject
+    )
+    begin {
+        $includeStyle = $MyInvocation.ExpectingInput
+        $style = '--style', 'grid,numbers,snip'
+        foreach ($arg in $ArgumentList) {
+            if ($arg -match '^--style=') {
+                $includeStyle = $false
+                break
+            }
+
+            if ($arg -match '^--file-name') {
+                $style = '--style', 'grid,numbers,snip,header-filename'
+            }
+        }
+
+        if ($includeStyle) {
+            $ArgumentList += $style
+        }
+
+        $pipe = { bat @ArgumentList }.GetSteppablePipeline($MyInvocation.CommandOrigin)
+        $pipe.Begin($PSCmdlet)
+    }
+    process {
+        $pipe.Process($PSItem)
+    }
+    end {
+        $pipe.End()
     }
 }
