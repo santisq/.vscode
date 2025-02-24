@@ -64,5 +64,9 @@
     {
         "key": "ctrl+alt+f",
         "command": "editor.action.formatDocument"
+    },
+    {
+        "key": "ctrl+shift+r ctrl+shift+t",
+        "command": "workbench.action.tasks.test"
     }
 ]
