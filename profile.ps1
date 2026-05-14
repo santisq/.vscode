@@ -23,11 +23,11 @@ if ($psEditor) {
 }
 
 class CultureCompleter : System.Management.Automation.IArgumentCompleter {
-    static [System.Collections.Generic.List[System.Management.Automation.CompletionResult]] $Completions
+    [System.Collections.Generic.List[System.Management.Automation.CompletionResult]] $Completions = @()
+    [System.StringComparison] $Comparer = [System.StringComparison]::InvariantCultureIgnoreCase
     static [cultureinfo[]] $Cultures
 
     static CultureCompleter() {
-        [CultureCompleter]::Completions = [System.Collections.Generic.List[System.Management.Automation.CompletionResult]]::new()
         [CultureCompleter]::Cultures = [cultureinfo]::GetCultures([System.Globalization.CultureTypes]::SpecificCultures)
     }
 
@@ -38,22 +38,20 @@ class CultureCompleter : System.Management.Automation.IArgumentCompleter {
         [System.Management.Automation.Language.CommandAst] $commandAst,
         [System.Collections.IDictionary] $fakeBoundParameters) {
 
-        [CultureCompleter]::Completions.Clear()
-        $word = [regex]::Escape($WordToComplete)
-
         foreach ($culture in [CultureCompleter]::Cultures) {
-            if ($culture.Name -notmatch $word -and $culture.DisplayName -notmatch $word) {
+            if (-not $culture.Name.StartsWith($WordToComplete, $this.Comparer) -and
+                -not $culture.DisplayName.StartsWith($wordToComplete, $this.Comparer)) {
                 continue
             }
 
-            [CultureCompleter]::Completions.Add([System.Management.Automation.CompletionResult]::new(
-                $culture.Name,
-                [string]::Format('{0}, {1}', $culture.Name, $culture.DisplayName),
-                [System.Management.Automation.CompletionResultType]::ParameterValue,
-                $culture.DisplayName))
+            $this.Completions.Add([System.Management.Automation.CompletionResult]::new(
+                    $culture.Name,
+                    [string]::Format('{0}, {1}', $culture.Name, $culture.DisplayName),
+                    [System.Management.Automation.CompletionResultType]::ParameterValue,
+                    $culture.DisplayName))
         }
 
-        return [CultureCompleter]::Completions
+        return $this.Completions.ToArray()
     }
 }
 
@@ -77,7 +75,7 @@ function Use-Culture {
             [Threading.Thread]::CurrentThread.CurrentCulture =
             [Threading.Thread]::CurrentThread.CurrentUICulture = $Culture
 
-            $ScriptBlock.Invoke()
+            & $ScriptBlock
         }
         catch {
             $PSCmdlet.WriteError($_)
@@ -121,42 +119,52 @@ function Measure-Expression {
                     { & $test.Value }
                 }
 
+                [GC]::Collect([GC]::MaxGeneration, [GCCollectionMode]::Forced, $true)
+                [GC]::WaitForPendingFinalizers()
+                [GC]::Collect([GC]::MaxGeneration, [GCCollectionMode]::Forced, $true)
+
+                $membefore = [GC]::GetTotalMemory($true)
+
                 $now = [datetime]::Now
                 $null = $sb.Invoke()
-                $totalMs = ([datetime]::Now - $now).TotalMilliseconds
+                $span = [datetime]::Now - $now
+
+                $memDiff = [GC]::GetTotalMemory($false) - $membefore
 
                 [pscustomobject]@{
-                    TestRun           = $_
-                    Test              = $test.Key
-                    TotalMilliseconds = [math]::Round($totalMs, 2)
+                    TestRun  = $_
+                    Test     = $test.Key
+                    TimeSpan = $span
+                    Memory   = [Math]::Max($memDiff, 0)
                 }
 
-                [GC]::Collect()
-                [GC]::WaitForPendingFinalizers()
             }
         } | Sort-Object TotalMilliseconds
 
         $average = $allTests | Group-Object Test | ForEach-Object {
-            $avg = [Linq.Enumerable]::Average([double[]] $_.Group.TotalMilliseconds)
-
             [pscustomobject]@{
-                Test    = $_.Name
-                Average = $avg
+                Test          = $_.Name
+                AverageTime   = [Linq.Enumerable]::Average([long[]] $_.Group.TimeSpan.Ticks)
+                AverageMemory = [Linq.Enumerable]::Average([long[]] $_.Group.Memory)
             }
-        } | Sort-Object Average
+        } | Sort-Object AverageTime
 
         $average | Select-Object @(
             'Test'
             @{
-                Name       = 'Average'
-                Expression = { '{0:0.00} ms' -f $_.Average }
+                Name       = "Average ($TestCount invocations)"
+                Expression = { [timespan]::new($_.AverageTime).ToString('hh\:mm\:ss\.fff') }
             }
             @{
                 Name       = 'RelativeSpeed'
                 Expression = {
-                    $relativespeed = $_.Average / $average[0].Average
+                    $relativespeed = $_.AverageTime / $average[0].AverageTime
                     [math]::Round($relativespeed, 2).ToString() + 'x'
                 }
+            }
+            @{
+                Name       = 'AverageMemory (Mb)'
+                Expression = { [math]::Round($_.AverageMemory / 1mb, 2) }
             }
         )
 
@@ -374,8 +382,8 @@ function Expand-MemberInfo {
 
 
         $null = $sb.
-            AppendFormat('--md {0} ', $metadataToken).
-            AppendFormat('"{0}"', $assembly.Location)
+        AppendFormat('--md {0} ', $metadataToken).
+        AppendFormat('"{0}"', $assembly.Location)
 
         & ([scriptblock]::Create(('& "{0}" {1}' -f $dnSpy.Source, $sb.ToString())))
     }
